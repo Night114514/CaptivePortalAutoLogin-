@@ -35,7 +35,6 @@ import de.binarynoise.captiveportalautologin.databinding.ActivityRecordCaptivePo
 import de.binarynoise.captiveportalautologin.preferences.SharedPreferences
 import de.binarynoise.captiveportalautologin.preferences.SystemPortalTestUrl
 import de.binarynoise.captiveportalautologin.preferences.SystemPortalUserAgent
-import de.binarynoise.captiveportalautologin.util.getHiddenStaticFieldValue
 import de.binarynoise.captiveportalautologin.util.invokeHiddenMethod
 import de.binarynoise.liberator.PortalTestURL
 import de.binarynoise.liberator.tryOrIgnore
@@ -43,6 +42,8 @@ import de.binarynoise.liberator.tryOrLog
 import de.binarynoise.logger.Logger.log
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import org.mozilla.geckoview.GeckoSession
+
+private const val EXTRA_CAPTIVE_PORTAL_USER_AGENT = "android.net.extra.CAPTIVE_PORTAL_USER_AGENT"
 
 class RecordCaptivePortalActivity : ComponentActivity() {
     @get:UiThread
@@ -127,7 +128,7 @@ class RecordCaptivePortalActivity : ComponentActivity() {
         
         if (SharedPreferences.liberator_user_agent.get() == SystemPortalUserAgent) {
             val userAgent = intent.getStringExtra(
-                ConnectivityManager::class.java.getHiddenStaticFieldValue("EXTRA_CAPTIVE_PORTAL_USER_AGENT") as String
+                EXTRA_CAPTIVE_PORTAL_USER_AGENT
             )
             if (userAgent != null) extensionDelegate.session.settings.userAgentOverride = userAgent
         }
