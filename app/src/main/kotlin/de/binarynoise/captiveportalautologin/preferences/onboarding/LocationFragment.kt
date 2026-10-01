@@ -17,16 +17,22 @@ class LocationFragment : Fragment(R.layout.fragment_onboarding_location) {
     
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        var advancing = false
         fun onStateChangeListener() {
-            if (Permissions.locationPermissions.all { it.granted(requireContext()) }) {
-                requireActivity().supportFragmentManager.commit {
+            val currentContext = context ?: return
+            if (!advancing && Permissions.locationPermissions.all { it.granted(currentContext) }) {
+                advancing = true
+                parentFragmentManager.commit {
                     replace(R.id.fragmentContainerView, DataCollectionFragment())
                     fillInAnimation()
                 }
             }
         }
         onStateChangeListener()
-        requireActivity().supportFragmentManager.commit {
+        if (advancing) return
+        // This container belongs to this fragment, so its permission callbacks must
+        // stop when the onboarding page is removed from the activity.
+        childFragmentManager.commit {
             replace(
                 R.id.permissionsFragmentContainerView, PermissionsFragment(
                     false,
