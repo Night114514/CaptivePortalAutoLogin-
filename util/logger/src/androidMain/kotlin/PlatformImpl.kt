@@ -14,7 +14,6 @@ import androidx.core.util.forEach
 import androidx.core.util.isEmpty
 import androidx.core.view.children
 import de.binarynoise.logger.Logger.dump
-import de.robv.android.xposed.XposedBridge
 import org.json.JSONArray as OrgJSONArray
 import org.json.JSONObject as OrgJSONObject
 
@@ -59,22 +58,19 @@ class PlatformImpl : Platform {
     }
     
     companion object {
-        private var toXposedBridge = false
-        var Logger.Config.toXposedBridge: Boolean by ::toXposedBridge
+        /** Optional process-local sink. Normal app operation does not need a hooking framework. */
+        @Volatile
+        var externalLogSink: ((String, Throwable?) -> Unit)? = null
     }
-    
+
     override fun log(s: String) {
-        if (toXposedBridge) {
-            XposedBridge.log("Logger: $s")
-        }
+        externalLogSink?.invoke(s, null)
     }
-    
+
     override fun log(t: Throwable) {
-        if (toXposedBridge) {
-            XposedBridge.log(t)
-        }
+        externalLogSink?.invoke(t.toString(), t)
     }
-    
+
     override fun platformSpecificDump(
         obj: Any,
         name: String,

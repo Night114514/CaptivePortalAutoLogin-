@@ -22,6 +22,7 @@
     <application
         android:name="de.binarynoise.captiveportalautologin.Application"
         android:allowBackup="true"
+        android:description="@string/xposed_description"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -124,22 +125,5 @@
         </provider>
         
         
-        <meta-data
-            android:name="xposedmodule"
-            android:value="true"
-            />
-        <meta-data
-            android:name="xposeddescription"
-            android:value="Forcing Android to reevaluate the Captive Portal after liberation"
-            />
-        <meta-data
-            android:name="xposedminversion"
-            android:value="53"
-            />
-        <meta-data
-            android:name="xposedscope"
-            android:resource="@array/scope"
-            />
-    
     </application>
 </manifest>

@@ -21,9 +21,8 @@
 	public static ** bind(android.view.View);
 }
 
--keep,allowoptimization class ** implements de.robv.android.xposed.IXposedHookLoadPackage
--keep,allowoptimization class ** implements de.robv.android.xposed.IXposedHookInitPackageResources
--keep,allowoptimization class ** implements de.robv.android.xposed.IXposedHookZygoteInit
+# The modern entry is loaded by name from META-INF/xposed/java_init.list.
+-keep,allowoptimization class de.binarynoise.captiveportalautologin.xposed.CaptivePortalModule { *; }
 
 #noinspection ShrinkerUnresolvedReference
 -assumenosideeffects class android.util.Log {

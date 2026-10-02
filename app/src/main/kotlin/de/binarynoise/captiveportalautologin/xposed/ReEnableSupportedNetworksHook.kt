@@ -1,41 +1,40 @@
-@file:Suppress("Deprecation", "LocalVariableName")
+@file:Suppress("DEPRECATION")
 
 package de.binarynoise.captiveportalautologin.xposed
 
 import android.net.wifi.WifiConfiguration
-import android.os.Build
 import de.binarynoise.liberator.SSID
 import de.binarynoise.liberator.portals.allPortalLiberators
-import de.binarynoise.logger.Logger.log
-import de.robv.android.xposed.IXposedHookLoadPackage
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedHelpers
-import de.robv.android.xposed.callbacks.XC_LoadPackage
 
-class ReEnableSupportedNetworksHook : IXposedHookLoadPackage {
-    override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
-        if (lpparam.packageName != "com.android.networkstack") return
-        applyLoggerConfig(lpparam)
-        log("${this::class.simpleName} handleLoadPackage ${lpparam.packageName} with process ${lpparam.processName} and pid ${android.os.Process.myPid()}")
-        
-        val whitelistedSSIDs: List<String> = allPortalLiberators.flatMap { portalLiberator ->
-            portalLiberator::class.java.annotations.filterIsInstance<SSID>().flatMap { it.ssid.asIterable() }
-        }
-        
-        val WifiBlocklistMonitor =
-            XposedHelpers.findClass("com.android.server.wifi.WifiBlocklistMonitor", lpparam.classLoader)
-        
-        XposedHelpers.findAndHookMethod(
-            WifiBlocklistMonitor,
-            "shouldEnableNetwork",
-            WifiConfiguration::class.java,
-            object : XC_MethodHook() {
-                override fun beforeHookedMethod(param: MethodHookParam) {
-                    val config = param.args[0] as WifiConfiguration
-                    if (whitelistedSSIDs.contains(config.SSID.trim('"'))) param.result = true
+internal object ReEnableSupportedNetworksHook {
+    fun observeWifiService(hooks: HookContext, systemLoader: ClassLoader) {
+        hooks.optional("SystemServiceManager.startService(Class)", systemLoader) {
+            val manager = systemLoader.targetClass("com.android.server.SystemServiceManager")
+            val service = systemLoader.targetClass("com.android.server.SystemService")
+            val start = manager.targetMethod("startService", service, Class::class.java)
+            hooks.intercept(start) { chain ->
+                val serviceClass = chain.getArg(0) as Class<*>
+                if (serviceClass.name == "com.android.server.wifi.WifiService") {
+                    // startServiceFromJar has resolved the Wi-Fi APEX loader, but has not
+                    // constructed WifiService/WifiInjector yet. Install before that happens.
+                    serviceClass.classLoader?.let { install(hooks, it) }
                 }
-            },
-        )
+                chain.proceed()
+            }
+        }
+    }
+
+    private fun install(hooks: HookContext, wifiLoader: ClassLoader) {
+        hooks.optional("WifiBlocklistMonitor.shouldEnableNetwork(WifiConfiguration)", wifiLoader) {
+            val monitor = wifiLoader.targetClass("com.android.server.wifi.WifiBlocklistMonitor")
+            val method = monitor.targetMethod("shouldEnableNetwork", Boolean::class.javaPrimitiveType!!, WifiConfiguration::class.java)
+            val supportedSsids = allPortalLiberators.flatMap { liberator ->
+                liberator::class.java.annotations.filterIsInstance<SSID>().flatMap { it.ssid.asIterable() }
+            }.toSet()
+            hooks.intercept(method) { chain ->
+                val config = chain.getArg(0) as WifiConfiguration
+                if (config.SSID?.trim('"') in supportedSsids) true else chain.proceed()
+            }
+        }
     }
 }

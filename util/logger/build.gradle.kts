@@ -21,7 +21,6 @@ kotlin {
                 compileOnly(libs.androidx.collection.ktx)
                 compileOnly(libs.androidx.core.ktx)
                 
-                compileOnly(libs.xposed.api)
             }
         }
         

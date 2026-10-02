@@ -1,40 +1,29 @@
 package de.binarynoise.captiveportalautologin.xposed
 
 import android.net.Network
-import android.os.Build
-import de.binarynoise.logger.Logger.log
-import de.robv.android.xposed.IXposedHookLoadPackage
-import de.robv.android.xposed.XC_MethodReplacement
-import de.robv.android.xposed.XposedHelpers
-import de.robv.android.xposed.callbacks.XC_LoadPackage
-import de.robv.android.xposed.XC_MethodHook as MethodHook
 
-class NetworkConnectedHook : IXposedHookLoadPackage {
-    override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
-        if (lpparam.packageName != "com.android.networkstack") return
-        applyLoggerConfig(lpparam)
-        log("${this::class.simpleName} handleLoadPackage ${lpparam.packageName} with process ${lpparam.processName} and pid ${android.os.Process.myPid()}")
-        
-        val NetworkStackNotifierClass =
-            XposedHelpers.findClass("com.android.networkstack.NetworkStackNotifier", lpparam.classLoader)
-        XposedHelpers.findAndHookMethod(
-            NetworkStackNotifierClass,
-            "isVenueInfoNotificationEnabled",
-            XC_MethodReplacement.returnConstant(false),
-        )
-        XposedHelpers.findAndHookMethod(
-            NetworkStackNotifierClass,
-            "updateNotifications",
-            Network::class.java,
-            object : MethodHook() {
-                override fun beforeHookedMethod(param: MethodHookParam) {
-                    val network = param.args[0] as Network
-                    val mNetworkStatus = XposedHelpers.getObjectField(param.thisObject, "mNetworkStatus")
-                    val trackedNetworkStatus = XposedHelpers.callMethod(mNetworkStatus, "get", network) ?: return
-                    XposedHelpers.setBooleanField(trackedNetworkStatus, "mValidatedNotificationPending", false)
-                }
-            },
-        )
+internal object NetworkConnectedHook {
+    fun install(hooks: HookContext, loader: ClassLoader) {
+        // These two features remain independent if a vendor removes only one target.
+        hooks.optional("NetworkStackNotifier.isVenueInfoNotificationEnabled()", loader) {
+            val notifier = loader.targetClass("com.android.networkstack.NetworkStackNotifier")
+            hooks.intercept(notifier.targetMethod("isVenueInfoNotificationEnabled", Boolean::class.javaPrimitiveType!!)) {
+                false
+            }
+        }
+        hooks.optional("NetworkStackNotifier.updateNotifications(Network)", loader) {
+            val notifier = loader.targetClass("com.android.networkstack.NetworkStackNotifier")
+            val status = loader.targetClass("com.android.networkstack.NetworkStackNotifier\$TrackedNetworkStatus")
+            val networkStatus = notifier.getDeclaredField("mNetworkStatus").apply {
+                require(Map::class.java.isAssignableFrom(type)) { "$this is not a Map" }
+                isAccessible = true
+            }
+            val pending = status.targetField("mValidatedNotificationPending", Boolean::class.javaPrimitiveType!!)
+            hooks.intercept(notifier.targetMethod("updateNotifications", Void.TYPE, Network::class.java)) { chain ->
+                val tracked = (networkStatus.get(chain.thisObject) as Map<*, *>)[chain.getArg(0)]
+                if (tracked != null) pending.setBoolean(tracked, false)
+                chain.proceed()
+            }
+        }
     }
 }

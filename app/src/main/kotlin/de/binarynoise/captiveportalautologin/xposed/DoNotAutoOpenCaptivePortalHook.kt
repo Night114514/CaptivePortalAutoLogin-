@@ -1,32 +1,28 @@
 package de.binarynoise.captiveportalautologin.xposed
 
-import android.os.Build
-import de.binarynoise.logger.Logger.log
-import de.robv.android.xposed.IXposedHookLoadPackage
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedBridge
-import de.robv.android.xposed.XposedHelpers
-import de.robv.android.xposed.callbacks.XC_LoadPackage
-
-class DoNotAutoOpenCaptivePortalHook : IXposedHookLoadPackage {
-    override fun handleLoadPackage(lpparam: XC_LoadPackage.LoadPackageParam) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return
-        if (!listOf("com.android.systemui", "com.android.settings").contains(lpparam.packageName)) return
-        if (lpparam.packageName == "com.android.systemui" && Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) return
-        applyLoggerConfig(lpparam)
-        log("${this::class.simpleName} handleLoadPackage ${lpparam.packageName} with process ${lpparam.processName} and pid ${android.os.Process.myPid()}")
-        
-        val StandardWifiEntryClass =
-            XposedHelpers.findClass("com.android.wifitrackerlib.StandardWifiEntry", lpparam.classLoader)
-        val connectMethod = StandardWifiEntryClass.declaredMethods.find { it.name == "connect" }
-        
-        XposedBridge.hookMethod(
-            connectMethod,
-            object : XC_MethodHook() {
-                override fun afterHookedMethod(param: MethodHookParam) {
-                    XposedHelpers.setBooleanField(param.thisObject, "mShouldAutoOpenCaptivePortal", false)
+internal object DoNotAutoOpenCaptivePortalHook {
+    fun install(hooks: HookContext, loader: ClassLoader) {
+        hooks.optional("StandardWifiEntry.connect", loader) {
+            val entry = loader.targetClass("com.android.wifitrackerlib.StandardWifiEntry")
+            val callback = loader.targetClass("com.android.wifitrackerlib.WifiEntry\$ConnectCallback")
+            val autoOpen = entry.targetField("mShouldAutoOpenCaptivePortal", Boolean::class.javaPrimitiveType!!)
+            // AOSP and the inspected HyperOS overloads delegate to different innermost methods.
+            val signatures = listOf(
+                listOf(callback),
+                listOf(callback, Boolean::class.javaPrimitiveType!!),
+                listOf(callback, Boolean::class.javaPrimitiveType!!, String::class.java),
+            )
+            val methods = entry.declaredMethods.filter {
+                it.name == "connect" && it.returnType == Void.TYPE && it.parameterTypes.toList() in signatures
+            }
+            require(methods.isNotEmpty()) { "No supported StandardWifiEntry.connect signature in ${entry.declaredMethods.toList()}" }
+            methods.forEach { method ->
+                hooks.intercept(method) { chain ->
+                    val result = chain.proceed()
+                    autoOpen.setBoolean(chain.thisObject, false)
+                    result
                 }
-            },
-        )
+            }
+        }
     }
 }

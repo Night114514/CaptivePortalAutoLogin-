@@ -115,7 +115,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.okhttp.urlconnection)
     
-    compileOnly(libs.xposed.api)
+    compileOnly(libs.libxposed.api)
     implementation(libs.hiddenapibypass)
     
     debugImplementation(libs.leakcanary.android)
@@ -125,6 +125,7 @@ dependencies {
     testImplementation(libs.junit.jupiter.params)
     testRuntimeOnly(libs.junit.platform.launcher)
     testImplementation(libs.json) // prevent `org.json.JSONObject not mocked` in the tests
+    testImplementation(libs.libxposed.api) // JVM hook contract tests only; never packaged in the app
 }
 
 tasks.withType<Test> {

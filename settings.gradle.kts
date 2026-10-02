@@ -25,11 +25,6 @@ dependencyResolutionManagement {
                 includeGroupAndSubgroups("androidx")
             }
         }
-        maven("https://api.xposed.info/") {
-            content {
-                includeGroup("de.robv.android.xposed")
-            }
-        }
         maven("https://maven.mozilla.org/maven2/") {
             content {
                 includeGroupAndSubgroups("org.mozilla")
