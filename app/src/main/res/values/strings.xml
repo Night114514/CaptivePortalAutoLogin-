@@ -134,4 +134,20 @@
     <string name="preference_update_check_checking">Checking…</string>
     <string name="error_api_base_url_not_set">Error: API base URL not set</string>
     <string name="preference_api_base_url_url_must_end_with_api">URL must end with /api/</string>
+    <string name="contact">Contact</string>
+    <string name="github_repository">GitHub Repository</string>
+    <string name="telegram_channel">Telegram Channel</string>
+    <string name="telegram_group">Telegram Group</string>
+    <string name="preference_update_check">Check for Updates</string>
+    <string name="preference_system">System</string>
+    <string name="notification_service_channel">Persistent Notification</string>
+    <string name="service_running">Service is currently running</string>
+    <string name="service_stopped">Service is currently not running</string>
+    <string name="service_restarting">%1$s and will be restarted</string>
+    <string name="network_status_details">Network %1$s with SSID %2$s %3$s and is currently %4$s</string>
+    <string name="network_portal_required">is caught in Portal</string>
+    <string name="network_portal_not_required">is not caught in Portal</string>
+    <string name="network_liberating">liberating</string>
+    <string name="network_liberated">liberated</string>
+    <string name="network_not_liberating">not liberating</string>
 </resources>

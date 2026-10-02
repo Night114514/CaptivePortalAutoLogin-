@@ -275,3 +275,38 @@ python tools/verify-modern-apk.py app/build/outputs/apk/arm64/release/app-arm64-
 
 工具輸出的 SHA-256 對應該次實際 APK；Git commit 改變會透過既有 version generation
 改變 APK，因此不要把較早一次 build 的 hash 套用到之後的檔案。
+
+## 香港繁體中文介面
+
+按使用者後續要求加入 `values-zh-rHK`，沿用 Android 的
+[語言與地區資源選擇](https://developer.android.com/guide/topics/resources/providing-resources)。
+系統語言為香港繁體中文時會自動使用翻譯，其他語言保留原有英文 fallback。
+本次沒有加入語言切換頁面或重新設計 UI。
+
+- main 資源共 116 個字串，包含 LSPosed module description；debug 另有 19 個字串。
+- 主頁聯絡連結、更新按鈕及通知類別名稱改用字串資源。
+- `StatusText.kt` 只負責狀態的顯示文字，原有狀態判斷及診斷 `toString()` 保留。
+- Backend／User Agent 的 `System` 顯示為「跟隨系統」，只更改 `entries`，
+  `entryValues` 及 SharedPreferences 儲存值保持 `System`，毋須設定遷移。
+- 應用程式名稱、品牌、網址、SSID、HAR 及日誌中的技術資料保持原樣。
+
+### 已執行的本地化驗證
+
+- 全部 135 個字串的 XML、key 集合及格式參數檢查通過。
+- 首次 lint 找到 debug source set 的 19 個 MissingTranslation；補齊翻譯後，
+  `:app:assembleArm64Debug :app:assembleArm64Release :app:testArm64DebugUnitTest :app:lint`
+  全部成功。app tests 為 50 passed；lint 為 13 warnings／0 errors，既有分析限制仍適用。
+- 兩個 APK 的 modern metadata、entry、legacy runtime 及 compileOnly 檢查通過。
+- 2026-10-02 15:54，安裝本地化的 Release 工作樹版本後實機冷啟動成功，
+  `Status: ok`、`LaunchState: COLD`；主頁、進階設定及權限頁均顯示繁體中文。
+- 網絡狀態正確顯示一般 Wi-Fi 不需要登入；Google backend 及 Chrome/Android
+  選擇在更新後仍保留，名稱沒有因翻譯改動而失效。
+- 獨立程式碼覆核未發現 blocking bug，確認狀態對應及選單儲存邏輯不變。
+
+### 本地化仍待驗證
+
+下拉選單實際選擇「跟隨系統」、冷啟動後讀回、其他系統語言 fallback、
+不同字體大小及長通知排版仍需補做。當前測試設定仍是 Google／Chrome/Android，
+尚未還原成 System。驗收中途 ADB 連線已中斷，最後 commit 所產出的 APK 必須另記
+實際安裝及啟動證據，不能直接沿用上述工作樹版本的結果。
+真正 captive portal 的 HTTP 登入及完整錄製流程仍未驗證。

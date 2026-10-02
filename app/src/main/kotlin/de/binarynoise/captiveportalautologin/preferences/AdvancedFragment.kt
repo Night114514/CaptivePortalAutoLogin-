@@ -36,6 +36,7 @@ import de.binarynoise.captiveportalautologin.ConnectivityChangeListenerService.S
 import de.binarynoise.captiveportalautologin.NetworkSuggestionOnPreferenceChangeListener
 import de.binarynoise.captiveportalautologin.Permissions
 import de.binarynoise.captiveportalautologin.R
+import de.binarynoise.captiveportalautologin.displayText
 import de.binarynoise.captiveportalautologin.SETTINGS_NON_PERSISTENT_MAC_RANDOMIZATION_FORCE_ENABLED_KEY
 import de.binarynoise.captiveportalautologin.client.ApiClient
 import de.binarynoise.captiveportalautologin.gecko.GeckoViewActivity
@@ -103,7 +104,7 @@ class AdvancedFragment : AutoCleanupPreferenceFragment() {
                 }
                 
                 serviceStateListeners.add {
-                    summary = it.toString()
+                    summary = it.displayText(ctx)
                     isChecked = it.running
                 }
             }
@@ -115,7 +116,7 @@ class AdvancedFragment : AutoCleanupPreferenceFragment() {
                     isEnabled = it.running
                 }
                 networkStateListeners.add {
-                    summary = it?.toString() ?: getString(R.string.not_connected_to_network)
+                    summary = it?.displayText(ctx) ?: getString(R.string.not_connected_to_network)
                 }
             }
             
@@ -284,10 +285,12 @@ class AdvancedFragment : AutoCleanupPreferenceFragment() {
             
             addPreference(DropDownPreference(ctx, SharedPreferences.liberator_captive_test_url)) {
                 titleRes = R.string.preference_captive_test_url
+                entries = entries.map { if (it == "System") getString(R.string.preference_system) else it }.toTypedArray()
             }
             
             addPreference(DropDownPreference(ctx, SharedPreferences.liberator_user_agent)) {
                 titleRes = R.string.preference_user_agent
+                entries = entries.map { if (it == "System") getString(R.string.preference_system) else it }.toTypedArray()
             }
             
             addPreference(SwitchPreference(ctx)) {
@@ -347,7 +350,7 @@ class AdvancedFragment : AutoCleanupPreferenceFragment() {
             }
             
             addPreference(Preference(ctx)) {
-                title = "Check for Updates"
+                titleRes = R.string.preference_update_check
                 onPreferenceClickListener = {
                     lifecycleScope.launch {
                         summary = getString(R.string.preference_update_check_checking)

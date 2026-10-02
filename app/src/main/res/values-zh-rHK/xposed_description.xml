@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="xposed_description">可選的系統整合功能：調整 Wi-Fi 登入通知及受支援網絡的行為</string>
+</resources>

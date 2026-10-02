@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="experiment_shortcut_long">實驗功能畫面</string>
+    <string name="experiment_shortcut_short">實驗功能</string>
+    <string name="work_shortcut_long">已排程的工作</string>
+    <string name="work_shortcut_short">工作</string>
+    <string name="urltest_shortcut_long">網址測試畫面</string>
+    <string name="urltest_shortcut_short">網址測試</string>
+    <string name="submit_portal_share_title">分享登入錄製資料</string>
+    <string name="submit_portal_scheduled">已排程上載 HAR</string>
+    <string name="gecko_upload_har">上載 HAR</string>
+    <string name="gecko_reload_page">重新載入網頁</string>
+    <string name="gecko_restart">重新啟動</string>
+    <string name="gecko_save">儲存 HAR</string>
+    <string name="gecko_share">分享 HAR</string>
+    <string name="gecko_not_connected">未連接任何網絡。你可能需要關閉流動數據後再試。</string>
+    <string name="gecko_no_portal">未偵測到 Wi-Fi 登入頁面。如果剛剛完成網絡登入，請立即儲存錄製資料。</string>
+    <string name="gecko_no_service">服務未啟動。請啟用服務後再試。</string>
+    <string name="gecko_browser_failure">設定瀏覽器時發生錯誤。請強制停止應用程式後再試。</string>
+    <string name="debug_url_test">立即測試！</string>
+    <string name="debug_schedule_upload">排程上載所有項目</string>
+</resources>

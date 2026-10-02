@@ -90,8 +90,8 @@ class ConnectivityChangeListenerService : Service() {
     @SuppressLint("MissingPermission")
     private fun updateNotification(oldState: NetworkState?, newState: NetworkState?) {
         val oldNotification = notification ?: return
-        val text = newState?.toString().orEmpty()
-        log("updateNotification: $text")
+        val text = newState?.displayText(this).orEmpty()
+        log("updateNotification: ${newState?.toString().orEmpty()}")
         val newNotification = NotificationCompat.Builder(this, oldNotification).apply {
             setContentText(text)
             clearActions()
@@ -129,7 +129,7 @@ class ConnectivityChangeListenerService : Service() {
         }
         
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val serviceChannel = NotificationChannel(channelId, "Persistent Notification", IMPORTANCE_MIN)
+            val serviceChannel = NotificationChannel(channelId, getString(R.string.notification_service_channel), IMPORTANCE_MIN)
             notificationManager.createNotificationChannel(serviceChannel)
         }
         notification = NotificationCompat.Builder(this, channelId).let { builder ->

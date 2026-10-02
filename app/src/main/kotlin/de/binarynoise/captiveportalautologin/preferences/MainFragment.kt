@@ -23,6 +23,7 @@ import de.binarynoise.captiveportalautologin.ConnectivityChangeListenerService.N
 import de.binarynoise.captiveportalautologin.ConnectivityChangeListenerService.ServiceState
 import de.binarynoise.captiveportalautologin.NetworkSuggestionOnPreferenceChangeListener
 import de.binarynoise.captiveportalautologin.R
+import de.binarynoise.captiveportalautologin.displayText
 import de.binarynoise.captiveportalautologin.gecko.RecordCaptivePortalActivity
 import de.binarynoise.captiveportalautologin.isMacRandomizationSupported
 import de.binarynoise.captiveportalautologin.isNetworkSuggestion
@@ -72,7 +73,7 @@ class MainFragment : AutoCleanupPreferenceFragment() {
                 }
                 
                 serviceStateListeners.add {
-                    summary = it.toString()
+                    summary = it.displayText(ctx)
                 }
             }
             
@@ -146,17 +147,17 @@ class MainFragment : AutoCleanupPreferenceFragment() {
             
             
             addPreference(PreferenceCategory(ctx)) {
-                title = "Contact"
+                titleRes = R.string.contact
                 addPreference(Preference(ctx)) {
-                    title = "GitHub Repository"
+                    titleRes = R.string.github_repository
                     intent = Intent(Intent.ACTION_VIEW, "https://github.com/binarynoise/CaptivePortalAutoLogin".toUri())
                 }
                 addPreference(Preference(ctx)) {
-                    title = "Telegram Channel"
+                    titleRes = R.string.telegram_channel
                     intent = Intent(Intent.ACTION_VIEW, "https://t.me/+__MmjOzaVOw3MDc6".toUri())
                 }
                 addPreference(Preference(ctx)) {
-                    title = "Telegram Group"
+                    titleRes = R.string.telegram_group
                     intent = Intent(Intent.ACTION_VIEW, "https://t.me/+a5Kj_MA-OGoyN2My".toUri())
                 }
             }
